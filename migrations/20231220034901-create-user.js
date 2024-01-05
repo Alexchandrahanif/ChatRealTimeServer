@@ -33,17 +33,24 @@ module.exports = {
         allowNull: false,
         unique: true,
       },
-      address: {
+      about: {
         type: Sequelize.STRING,
       },
       code: {
         type: Sequelize.STRING,
+      },
+      failed: {
+        type: Sequelize.INTEGER,
       },
       expiredCode: {
         type: Sequelize.DATE,
       },
       lastLogin: {
         type: Sequelize.DATE,
+      },
+      isActive: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: false,
       },
       statusActive: {
         type: Sequelize.BOOLEAN,

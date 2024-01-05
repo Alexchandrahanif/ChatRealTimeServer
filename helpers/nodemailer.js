@@ -17,7 +17,7 @@ function emailSend(dataUser, message, link) {
       let mailOptions = {
         from: process.env.EMAIL,
         to: dataUser.email,
-        subject: `Welcome to Printhink.id - ${dataUser.name}`,
+        subject: `Welcome - ${dataUser.name}`,
         html: `<div style="font-family: Helvetica;"><h3>Link Reset password  ${link} </h3><br>Thank you</div>`,
       }
 
@@ -34,7 +34,7 @@ function emailSend(dataUser, message, link) {
       let mailOptions = {
         from: process.env.EMAIL,
         to: dataUser.email,
-        subject: `Welcome to Printhink.id - ${dataUser.name}`,
+        subject: `Selamat Datang - ${dataUser.name}`,
         html: `<div style="font-family: Helvetica;"><h3>${message}</h3><br>Terimakasih</div>`,
       }
 

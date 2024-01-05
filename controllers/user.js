@@ -1,5 +1,6 @@
 const formatPhoneNumber = require("../helpers/formatPhoneNumber")
 const { comparePassword, createAccessToken } = require("../helpers/helper")
+const emailSend = require("../helpers/nodemailer")
 const { User } = require("../models")
 const moment = require("moment")
 
@@ -9,16 +10,30 @@ class Controller {
   // REGISTER
   static async register(req, res, next) {
     try {
-      const { username, email, password, phoneNumber, address } = req.body
+      const { username, email, password, confirmPassword, phoneNumber, about } =
+        req.body
+
+      let code = Math.floor(1000 + Math.random() * 9000)
+
       let body = {
         username,
         email,
         password,
         phoneNumber: formatPhoneNumber(phoneNumber),
-        address,
+        about,
+        code,
+        failed: 0,
       }
 
+      if (password !== confirmPassword) {
+        throw { name: "Password dan Konfirmasi Password Tidak Sama" }
+      }
+
+      const message = `Kode OTP : ${code}, berlaku selama 5 menit`
+
       const data = await User.create(body)
+
+      // emailSend(data, message)
 
       res.status(201).json({
         statusCode: 201,

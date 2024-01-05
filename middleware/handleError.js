@@ -21,6 +21,9 @@ const handleError = (err, req, res, next) => {
   } else if (err.name === "Mohon Masukkan Email") {
     code = 400
     message = "Mohon Masukkan Email"
+  } else if (err.name === "Password dan Konfirmasi Password Tidak Sama") {
+    code = 400
+    message = "Password dan Konfirmasi Password Tidak Sama"
   }
 
   // 401

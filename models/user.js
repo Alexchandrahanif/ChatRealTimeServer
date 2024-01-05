@@ -36,14 +36,14 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: false,
         unique: {
-          msg: "Email Must Be Unique",
+          msg: "Email sudah terdaftar!",
         },
         validate: {
           notEmpty: {
-            msg: "Email Is Required",
+            msg: "Email tidak boleh kosong!",
           },
           notNull: {
-            msg: "Email Is Required",
+            msg: "Email tidak boleh kosong!",
           },
           isEmail: {
             msg: "Must Format Email",
@@ -55,10 +55,10 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         validate: {
           notEmpty: {
-            msg: "Password Is Required",
+            msg: "Password tidak boleh kosong!",
           },
           notNull: {
-            msg: "Password Is Required",
+            msg: "Password tidak boleh kosong!",
           },
         },
       },
@@ -66,21 +66,23 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: false,
         unique: {
-          msg: "Phone Number Must Be Unique",
+          msg: "Nomor telepon sudah terdaftar!",
         },
         validate: {
           notEmpty: {
-            msg: "Phone Number Is Required",
+            msg: "Nomor telepon tidak boleh kosong!",
           },
           notNull: {
-            msg: "Phone Number Is Required",
+            msg: "Nomor telepon tidak boleh kosong!",
           },
         },
       },
-      address: DataTypes.STRING,
+      about: DataTypes.STRING,
       code: DataTypes.STRING,
+      failed: DataTypes.INTEGER,
       expiredCode: DataTypes.DATE,
       lastLogin: DataTypes.DATE,
+      isActive: DataTypes.BOOLEAN,
       statusActive: DataTypes.BOOLEAN,
     },
     {
