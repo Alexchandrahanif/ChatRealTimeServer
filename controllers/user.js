@@ -171,6 +171,120 @@ class Controller {
   // UPDATE USER
   static async updateUser(req, res, next) {
     try {
+      const { id } = req.params
+      const { username, about } = req.body
+
+      const data = await findOne({
+        where: {
+          id,
+        },
+      })
+
+      if (!data) {
+        throw { name: "Id User Tidak Ditemukan" }
+      }
+
+      await User.update(
+        { username, about, avatar: req.file ? req.file.path : "" },
+        { where: { id } },
+      )
+
+      res.status(200).json({
+        statusCode: 200,
+        message: "Berhasil Memperbaharui Data User",
+      })
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  // Verify Code
+  static async verifyCode(req, res, next) {
+    try {
+      const { id } = req.params
+      const { code } = req.body
+
+      const data = await findOne({
+        where: {
+          id,
+        },
+      })
+
+      if (!data) {
+        throw { name: "Id User Tidak Ditemukan" }
+      }
+
+      let kesalahan = data.failed
+
+      const codeCreatedAt = data.createdAt
+      const time1 = `${new Date().toISOString().slice(0, 10)} ${new Date()
+        .toISOString()
+        .slice(11, 19)}`
+
+      const time2 = `${codeCreatedAt.toISOString().slice(0, 10)} ${codeCreatedAt
+        .toISOString()
+        .slice(11, 19)}`
+
+      function DeferentTime(time1, time2) {
+        const startTime = new Date(time1)
+        const endTime = new Date(time2)
+        const difference = endTime.getTime() - startTime.getTime()
+        const resultInMinutes = Math.abs(Math.round(difference / 60000))
+        return resultInMinutes
+      }
+
+      const deferent = DeferentTime(time1, time2)
+
+      if (deferent > 5) {
+        throw { name: "Maaf, Kode Anda Sudah Kadaluarsa", menit: deferent - 5 }
+        await User.destroy({
+          where: {
+            id,
+          },
+        })
+      }
+
+      if (code == data.code) {
+        await User.update(
+          {
+            isActive: true,
+          },
+          { where: id },
+        )
+      } else {
+        await User.update({ failed: kesalahan + 1 }, { where: { id } })
+
+        const data = await User.findOne({ where: { id } })
+
+        if (data.failed == 1) {
+          throw {
+            name: "Maaf, Kode Tidak Cocok",
+            kesempatan: 2,
+          }
+        }
+        if (data.failed == 2) {
+          throw {
+            name: "Maaf, Kode Tidak Cocok",
+            kesempatan: 1,
+          }
+        }
+        if (data.failed == 3) {
+          throw {
+            name: "Maaf, Kesempatan Anda Habis",
+          }
+          await User.destroy({
+            where: {
+              id,
+            },
+          })
+        }
+      }
+
+      await res.status(200).json({
+        statusCode: 200,
+        message: "Berhasil Mengaktifkan User",
+        data: data,
+      })
     } catch (error) {
       next(error)
     }

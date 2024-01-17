@@ -77,6 +77,7 @@ module.exports = (sequelize, DataTypes) => {
           },
         },
       },
+      avatar: DataTypes.STRING,
       about: DataTypes.STRING,
       code: DataTypes.STRING,
       failed: DataTypes.INTEGER,

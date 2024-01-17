@@ -21,6 +21,7 @@ module.exports = (sequelize, DataTypes) => {
       message: DataTypes.TEXT,
       messageImage: DataTypes.STRING,
       readMessageStatus: DataTypes.BOOLEAN,
+      isUpdate: DataTypes.BOOLEAN,
     },
     {
       sequelize,

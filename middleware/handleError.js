@@ -24,6 +24,15 @@ const handleError = (err, req, res, next) => {
   } else if (err.name === "Password dan Konfirmasi Password Tidak Sama") {
     code = 400
     message = "Password dan Konfirmasi Password Tidak Sama"
+  } else if (err.name === "Maaf, Kode Anda Sudah Kadaluarsa") {
+    code = 400
+    message = `Maaf, Kode Anda Sudah Kadaluarsa ${err.menit} lalu`
+  } else if (err.name === "Maaf, Kode Tidak Cocok") {
+    code = 400
+    message = `Maaf, Kode Tidak Cocok, tersisa ${err.kesempatan} lagi`
+  } else if (err.name === "Maaf, Kesempatan Anda Habis") {
+    code = 400
+    message = `Maaf, Kesempatan Anda Habis`
   }
 
   // 401
@@ -49,8 +58,11 @@ const handleError = (err, req, res, next) => {
 
   // 404
   else if (err.name === "Id User Tidak Ditemukan") {
-    code = 403
+    code = 404
     message = "Id User Tidak Ditemukan"
+  } else if (err.name === "Id Chat Tidak Ditemukan") {
+    code = 404
+    message = "Id Chat Tidak Ditemukan"
   }
 
   res.status(code).json({
