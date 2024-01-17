@@ -20,6 +20,7 @@ module.exports = (sequelize, DataTypes) => {
       ReceiverId: DataTypes.UUID,
       message: DataTypes.TEXT,
       messageImage: DataTypes.STRING,
+      readMessageStatus: DataTypes.BOOLEAN,
     },
     {
       sequelize,

@@ -40,6 +40,9 @@ module.exports = {
       messageImage: {
         type: Sequelize.STRING,
       },
+      readMessageStatus: {
+        type: Sequelize.BOOLEAN,
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,
