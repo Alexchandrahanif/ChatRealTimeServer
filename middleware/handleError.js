@@ -63,6 +63,15 @@ const handleError = (err, req, res, next) => {
   } else if (err.name === "Id Chat Tidak Ditemukan") {
     code = 404
     message = "Id Chat Tidak Ditemukan"
+  } else if (err.name === "Id Group Tidak Ditemukan") {
+    code = 404
+    message = "Id Group Tidak Ditemukan"
+  } else if (err.name === "Id Group Chat Tidak Ditemukan") {
+    code = 404
+    message = "Id Group Chat Tidak Ditemukan"
+  } else if (err.name === "Id Contact Tidak Ditemukan") {
+    code = 404
+    message = "Id Contact Tidak Ditemukan"
   }
 
   res.status(code).json({

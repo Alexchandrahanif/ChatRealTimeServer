@@ -8,6 +8,9 @@ module.exports = (sequelize, DataTypes) => {
         through: models.GroupMember,
         foreignKey: "UserId",
       })
+      User.hasMany(models.Group, {
+        foreignKey: "AdminId",
+      })
 
       User.hasMany(models.GroupMember, {
         foreignKey: "UserId",
@@ -26,6 +29,16 @@ module.exports = (sequelize, DataTypes) => {
       User.hasMany(models.PersonalMessage, {
         foreignKey: "ReceiverId",
         as: "Penerima",
+      })
+
+      User.hasOne(models.Contact, {
+        foreignKey: "ContactId",
+        as: "Contact",
+      })
+
+      User.hasMany(models.Contact, {
+        foreignKey: "PemilikId",
+        as: "Pemilik",
       })
     }
   }

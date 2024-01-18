@@ -18,6 +18,8 @@ module.exports = (sequelize, DataTypes) => {
       SenderId: DataTypes.UUID,
       message: DataTypes.TEXT,
       messageImage: DataTypes.STRING,
+      readMessageStatus: DataTypes.BOOLEAN,
+      isUpdate: DataTypes.BOOLEAN,
     },
     {
       sequelize,

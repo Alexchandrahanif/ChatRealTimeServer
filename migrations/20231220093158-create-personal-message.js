@@ -42,6 +42,7 @@ module.exports = {
       },
       readMessageStatus: {
         type: Sequelize.BOOLEAN,
+        defaultValue: false,
       },
       createdAt: {
         allowNull: false,
