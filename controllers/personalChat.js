@@ -1,4 +1,5 @@
 const { User, PersonalChat } = require("../models")
+const io = require("socket.io")
 
 class Controller {
   // GET ALL
@@ -65,13 +66,18 @@ class Controller {
         throw { name: "Id User Tidak Ditemukan" }
       }
 
+      let messageImage = req.file ? req.file.path : ""
+
       const dataChat = await PersonalChat.create({
         SenderId,
         ReceiverId,
         message,
-        messageImage: req.file ? req.file.path : "",
+        messageImage: messageImage,
         readMessageStatus: false,
       })
+
+      // Kirim pesan menggunakan Socket.IO
+      io.emit("chat message", { SenderId, ReceiverId, message, messageImage })
 
       res.status(201).json({
         statusCode: 201,
