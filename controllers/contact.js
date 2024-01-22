@@ -3,12 +3,91 @@ class Controller {
   // GET ALL
   static async getAll(req, res, next) {
     try {
-      const data = await Contact.findAll()
+      const { limit, page, search, tanggal } = req.query
+
+      let pagination = {
+        where: {},
+        include: [
+          {
+            model: User,
+            as: "Pemilik",
+          },
+          {
+            model: User,
+            as: "Contact",
+          },
+        ],
+        limit: limit ? limit : 50,
+        order: [["username", "asc"]],
+      }
+
+      if (limit) {
+        pagination.limit = limit
+      }
+
+      if (page && limit) {
+        pagination.offset = (page - 1) * limit
+      }
+
+      if (search) {
+        pagination.where = {
+          [Op.or]: [{ username: { [Op.iLike]: `%${search}%` } }],
+        }
+      }
+
+      if (tanggal) {
+        const pagi = moment().format(`${tanggal} 00:00`)
+        const masuk = moment().format(`${tanggal} 23:59`)
+        pagination.where = {
+          createdAt: {
+            [Op.between]: [pagi, masuk],
+          },
+        }
+      }
+
+      let dataUser = await User.findAndCountAll(pagination)
+
+      let totalPage = Math.ceil(dataUser.count / (limit ? limit : 50))
 
       res.status(200).json({
         statusCode: 200,
-        message: "Berhasil Menampilkan Data Contact",
-        data: data,
+        message: "Berhasil Mendapatkan Semua Data Contact",
+        data: dataUser.rows,
+        totaldataUser: dataUser.count,
+        totalPage: totalPage,
+      })
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  // GER ALL BY PERSONAL
+  static async getAllPersonal(req, res, next) {
+    try {
+      const { id } = req.params
+
+      const data = await User.getOne({ where: { id } })
+
+      if (!data) {
+        throw { name: "Id User Tidak Ditemukan" }
+      }
+
+      const dataContact = await Contact.findAll({
+        where: {
+          PemilikId: id,
+        },
+        include: [
+          {
+            module: User,
+            as: "Contact",
+          },
+        ],
+      })
+
+      res.status(200).json({
+        statusCode: 200,
+        message: "Berhasil Menampilkan Data Contact By Personal",
+        data: dataContact,
       })
     } catch (error) {
       next(error)
@@ -23,6 +102,16 @@ class Controller {
         where: {
           id,
         },
+        include: [
+          {
+            model: User,
+            as: "Pemilik",
+          },
+          {
+            model: User,
+            as: "Contact",
+          },
+        ],
       })
 
       if (!data) {
@@ -41,10 +130,8 @@ class Controller {
   // CREATE
   static async create(req, res, next) {
     try {
-      const {} = req.body
-      let body = {
-        //
-      }
+      const { username, ContactId, PemilikId } = req.body
+      let body = { username, ContactId, PemilikId }
 
       const data = await Contact.create(body)
       res.status(201).json({
@@ -61,9 +148,9 @@ class Controller {
   static async update(req, res, next) {
     try {
       const { id } = req.params
-      const {} = req.body
+      const { username, ContactId, PemilikId } = req.body
 
-      let body = {}
+      let body = { username, ContactId, PemilikId }
 
       const data = await Contact.findOne({
         where: {
@@ -87,7 +174,7 @@ class Controller {
   }
 
   // DELETE
-  static async getAll(req, res, next) {
+  static async delete(req, res, next) {
     try {
       const { id } = req.params
       const data = await Contact.findOne({
