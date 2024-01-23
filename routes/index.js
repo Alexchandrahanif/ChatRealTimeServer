@@ -8,7 +8,7 @@ const router = require("express").Router()
 
 router.use("/user", userRouter)
 router.use("/contact", contactRouter)
-router.use("/personalChat", personalCharRouter)
+router.use("/chat", personalCharRouter)
 router.use("/groupChat", groupChatRouter)
 router.use("/group", groupRouter)
 

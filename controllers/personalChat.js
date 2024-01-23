@@ -1,5 +1,7 @@
-const { User, PersonalChat } = require("../models")
+const { Op } = require("sequelize")
+const { User, PersonalMessage } = require("../models")
 const io = require("socket.io")
+const { exclude } = require("../helpers/helper")
 
 class Controller {
   // GET ALL
@@ -7,16 +9,38 @@ class Controller {
     try {
       const { ReceiverId } = req.params
 
-      const dataReceiver = await User.findOne({ where: { ReceiverId } })
+      const dataReceiver = await User.findOne({ where: { id: ReceiverId } })
+      const dataSender = await User.findOne({
+        where: { id: req.user.id },
+      })
 
-      if (!dataReceiver) {
+      if (!dataReceiver || !dataSender) {
         throw { name: "Id User Tidak Ditemukan" }
       }
-      const dataChat = await PersonalChat.findAll({
+
+      const dataChat = await PersonalMessage.findAll({
         where: {
-          ReceiverId,
-          SenderId: req.user.id,
+          [Op.or]: [
+            { SenderId: req.user.id, ReceiverId },
+            { SenderId: ReceiverId, ReceiverId: req.user.id },
+          ],
         },
+        include: [
+          {
+            model: User,
+            as: "Pengirim",
+            attributes: {
+              exclude,
+            },
+          },
+          {
+            model: User,
+            as: "Penerima",
+            attributes: {
+              exclude,
+            },
+          },
+        ],
         order: [["createdAt", "ASC"]],
       })
 
@@ -35,10 +59,26 @@ class Controller {
     try {
       const { id } = req.params
 
-      const dataChat = await PersonalChat.findOne({
+      const dataChat = await PersonalMessage.findOne({
         where: {
           id,
         },
+        include: [
+          {
+            model: User,
+            as: "Pengirim",
+            attributes: {
+              exclude,
+            },
+          },
+          {
+            model: User,
+            as: "Penerima",
+            attributes: {
+              exclude,
+            },
+          },
+        ],
       })
 
       if (!dataChat) {
@@ -59,8 +99,8 @@ class Controller {
   static async createChat(req, res, next) {
     try {
       const { SenderId, ReceiverId, message } = req.body
-      const dataSender = await User.findOne({ where: { SenderId } })
-      const dataReceiver = await User.findOne({ where: { ReceiverId } })
+      const dataSender = await User.findOne({ where: { id: SenderId } })
+      const dataReceiver = await User.findOne({ where: { id: ReceiverId } })
 
       if (!dataSender || !dataReceiver) {
         throw { name: "Id User Tidak Ditemukan" }
@@ -68,16 +108,17 @@ class Controller {
 
       let messageImage = req.file ? req.file.path : ""
 
-      const dataChat = await PersonalChat.create({
+      const dataChat = await PersonalMessage.create({
         SenderId,
         ReceiverId,
         message,
         messageImage: messageImage,
         readMessageStatus: false,
+        isUpdate: false,
       })
 
       // Kirim pesan menggunakan Socket.IO
-      io.emit("chat message", { SenderId, ReceiverId, message, messageImage })
+      // io.emit("chat message", { SenderId, ReceiverId, message, messageImage })
 
       res.status(201).json({
         statusCode: 201,
@@ -95,7 +136,7 @@ class Controller {
       const { id } = req.params
       const { message } = req.body
 
-      const dataChat = await PersonalChat.findOne({
+      const dataChat = await PersonalMessage.findOne({
         where: {
           id,
         },
@@ -105,7 +146,10 @@ class Controller {
         throw { name: "Id Chat Tidak Ditemukan" }
       }
 
-      await PersonalChat.update({ message, isUpdate: true }, { where: { id } })
+      await PersonalMessage.update(
+        { message, isUpdate: true },
+        { where: { id } },
+      )
 
       res.status(200).json({
         statusCode: 200,
@@ -120,12 +164,14 @@ class Controller {
   static async updateStatusChat(req, res, next) {
     try {
       const { SenderId } = req.params
+      console.log(req.user.id)
 
-      const dataChat = await PersonalChat.update(
+      const dataChat = await PersonalMessage.update(
         { readMessageStatus: true },
         {
           where: {
             SenderId,
+            ReceiverId: req.user.id,
           },
         },
       )
@@ -144,7 +190,7 @@ class Controller {
     try {
       const { id } = req.params
 
-      const dataChat = await PersonalChat.findOne({
+      const dataChat = await PersonalMessage.findOne({
         where: {
           id,
         },
@@ -154,7 +200,7 @@ class Controller {
         throw { name: "Id Chat Tidak Ditemukan" }
       }
 
-      await PersonalChat.destroy({
+      await PersonalMessage.destroy({
         where: {
           id,
         },

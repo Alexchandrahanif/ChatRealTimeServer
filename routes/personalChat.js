@@ -6,7 +6,7 @@ const personalCharRouter = require("express").Router()
 const file = upload()
 
 personalCharRouter.get(
-  "/personal/:ReveiverId",
+  "/personal/:ReceiverId",
   authentication,
   Controller.getAllChat,
 )
@@ -15,10 +15,14 @@ personalCharRouter.post(
   "/",
   authentication,
   file.single("messageImage"),
-  Controller.getOneChat,
+  Controller.createChat,
 )
-personalCharRouter.patch("/:id", authentication, Controller.createChat)
-personalCharRouter.patch("/status/:id", authentication, Controller.updateChat)
+personalCharRouter.patch("/:id", authentication, Controller.updateChat)
+personalCharRouter.patch(
+  "/status/:SenderId",
+  authentication,
+  Controller.updateStatusChat,
+)
 personalCharRouter.delete("/:id", authentication, Controller.deleteChat)
 
 module.exports = personalCharRouter
