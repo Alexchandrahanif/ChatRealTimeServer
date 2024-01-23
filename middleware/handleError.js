@@ -44,6 +44,12 @@ const handleError = (err, req, res, next) => {
   } else if (err.name === "Nomor Telepon Tidak Terdaftar Sebagai Pengguna") {
     code = 400
     message = `Nomor Telepon Tidak Terdaftar Sebagai Pengguna`
+  } else if (err.name === "Maaf Anda Bukan Anggota Group") {
+    code = 400
+    message = `Maaf Anda Bukan Anggota Group ${err.groupName}`
+  } else if (err.name === "Maaf Anda Bukan Admin Group") {
+    code = 400
+    message = `Maaf Anda Bukan Admin Group ${err.groupName}`
   }
 
   // 401
@@ -83,6 +89,9 @@ const handleError = (err, req, res, next) => {
   } else if (err.name === "Id Contact Tidak Ditemukan") {
     code = 404
     message = "Id Contact Tidak Ditemukan"
+  } else if (err.name === "Id Member Group Tidak Ditemukan") {
+    code = 404
+    message = "Id Member Group Tidak Ditemukan"
   }
 
   res.status(code).json({
