@@ -326,7 +326,7 @@ class Controller {
   static async deleteUser(req, res, next) {
     try {
       const { id } = req.params
-      const data = await findOne({
+      const data = await User.findOne({
         where: {
           id,
         },
