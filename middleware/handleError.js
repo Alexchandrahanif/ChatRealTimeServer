@@ -26,13 +26,18 @@ const handleError = (err, req, res, next) => {
     message = "Password dan Konfirmasi Password Tidak Sama"
   } else if (err.name === "Maaf, Kode Anda Sudah Kadaluarsa") {
     code = 400
-    message = `Maaf, Kode Anda Sudah Kadaluarsa ${err.menit} lalu`
+    message = `Maaf, Kode Anda Sudah Kadaluarsa ${
+      err.menit > 60 ? "1 Jam lebih yang lalu" : err.menit + "Menit lalu"
+    }`
   } else if (err.name === "Maaf, Kode Tidak Cocok") {
     code = 400
     message = `Maaf, Kode Tidak Cocok, tersisa ${err.kesempatan} lagi`
   } else if (err.name === "Maaf, Kesempatan Anda Habis") {
     code = 400
     message = `Maaf, Kesempatan Anda Habis`
+  } else if (err.name === "Akun Anda Sudah Aktif") {
+    code = 400
+    message = `Akun Anda Sudah Aktif`
   }
 
   // 401

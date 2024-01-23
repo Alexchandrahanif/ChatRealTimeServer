@@ -85,7 +85,6 @@ class Controller {
   // GET ALL USER
   static async getAllUsers(req, res, next) {
     try {
-      // MENDAPATKAN SEMUA DATA USER
       const { limit, page, search, tanggal } = req.query
 
       let pagination = {
@@ -94,7 +93,7 @@ class Controller {
           exclude: ["password"],
         },
         limit: limit ? limit : 50,
-        order: [["name", "asc"]],
+        order: [["username", "asc"]],
       }
 
       if (limit) {
@@ -145,7 +144,7 @@ class Controller {
   static async getUser(req, res, next) {
     try {
       const { id } = req.params
-      const data = await findOne({
+      const data = await User.findOne({
         where: {
           id,
         },
@@ -174,7 +173,7 @@ class Controller {
       const { id } = req.params
       const { username, about } = req.body
 
-      const data = await findOne({
+      const data = await User.findOne({
         where: {
           id,
         },
@@ -204,7 +203,7 @@ class Controller {
       const { id } = req.params
       const { code } = req.body
 
-      const data = await findOne({
+      const data = await User.findOne({
         where: {
           id,
         },
@@ -212,6 +211,10 @@ class Controller {
 
       if (!data) {
         throw { name: "Id User Tidak Ditemukan" }
+      }
+
+      if (data.code == 1) {
+        throw { name: "Akun Anda Sudah Aktif" }
       }
 
       let kesalahan = data.failed
@@ -236,21 +239,16 @@ class Controller {
       const deferent = DeferentTime(time1, time2)
 
       if (deferent > 5) {
-        throw { name: "Maaf, Kode Anda Sudah Kadaluarsa", menit: deferent - 5 }
         await User.destroy({
           where: {
             id,
           },
         })
+        throw { name: "Maaf, Kode Anda Sudah Kadaluarsa", menit: deferent - 5 }
       }
 
       if (code == data.code) {
-        await User.update(
-          {
-            isActive: true,
-          },
-          { where: id },
-        )
+        await User.update({ isActive: true, code: 1 }, { where: { id } })
       } else {
         await User.update({ failed: kesalahan + 1 }, { where: { id } })
 
@@ -268,22 +266,22 @@ class Controller {
             kesempatan: 1,
           }
         }
-        if (data.failed == 3) {
-          throw {
-            name: "Maaf, Kesempatan Anda Habis",
-          }
+        if (data.failed > 2) {
           await User.destroy({
             where: {
               id,
             },
           })
+
+          throw {
+            name: "Maaf, Kesempatan Anda Habis",
+          }
         }
       }
 
       await res.status(200).json({
         statusCode: 200,
-        message: "Berhasil Mengaktifkan User",
-        data: data,
+        message: "Berhasil Status Anda Aktif",
       })
     } catch (error) {
       next(error)
@@ -296,7 +294,7 @@ class Controller {
       const { id } = req.params
       const { statusActive } = req.body
 
-      const data = await findOne({
+      const data = await User.findOne({
         where: {
           id,
         },
