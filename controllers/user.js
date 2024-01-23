@@ -37,7 +37,7 @@ class Controller {
 
       res.status(201).json({
         statusCode: 201,
-        message: `Selamat Anda ${data.username}, anda Berhasil Register`,
+        message: `Selamat ${data.username}, anda Berhasil Register`,
         data: data,
       })
     } catch (error) {

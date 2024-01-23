@@ -11,9 +11,20 @@ const createAccessToken = (payload) =>
 const verifyAccessToken = (access_token) =>
   jwt.verify(access_token, process.env.SECRET_KEY)
 
+const exclude = [
+  "password",
+  "code",
+  "failed",
+  "expiredCode",
+  "lastLogin",
+  "isActive",
+  "statusActive",
+]
+
 module.exports = {
   hashingPassword,
   comparePassword,
   createAccessToken,
   verifyAccessToken,
+  exclude,
 }

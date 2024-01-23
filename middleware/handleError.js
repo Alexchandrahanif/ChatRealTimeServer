@@ -38,6 +38,12 @@ const handleError = (err, req, res, next) => {
   } else if (err.name === "Akun Anda Sudah Aktif") {
     code = 400
     message = `Akun Anda Sudah Aktif`
+  } else if (err.name === "Sudah Terdaftar") {
+    code = 400
+    message = `Nomor Telepon Sudah Terdaftar Dengan Nama ${err.username}`
+  } else if (err.name === "Nomor Telepon Tidak Terdaftar Sebagai Pengguna") {
+    code = 400
+    message = `Nomor Telepon Tidak Terdaftar Sebagai Pengguna`
   }
 
   // 401

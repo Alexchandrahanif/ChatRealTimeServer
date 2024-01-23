@@ -1,3 +1,4 @@
+const { exclude } = require("../helpers/helper")
 const { User, Contact } = require("../models")
 class Controller {
   // GET ALL
@@ -11,10 +12,16 @@ class Controller {
           {
             model: User,
             as: "Pemilik",
+            attributes: {
+              exclude: exclude,
+            },
           },
           {
             model: User,
-            as: "Contact",
+            as: "Teman",
+            attributes: {
+              exclude: exclude,
+            },
           },
         ],
         limit: limit ? limit : 50,
@@ -45,15 +52,15 @@ class Controller {
         }
       }
 
-      let dataUser = await User.findAndCountAll(pagination)
+      let dataContact = await Contact.findAndCountAll(pagination)
 
-      let totalPage = Math.ceil(dataUser.count / (limit ? limit : 50))
+      let totalPage = Math.ceil(dataContact.count / (limit ? limit : 50))
 
       res.status(200).json({
         statusCode: 200,
         message: "Berhasil Mendapatkan Semua Data Contact",
-        data: dataUser.rows,
-        totaldataUser: dataUser.count,
+        data: dataContact.rows,
+        totaldataContact: dataContact.count,
         totalPage: totalPage,
       })
     } catch (error) {
@@ -66,7 +73,7 @@ class Controller {
     try {
       const { id } = req.params
 
-      const data = await User.getOne({ where: { id } })
+      const data = await User.findOne({ where: { id } })
 
       if (!data) {
         throw { name: "Id User Tidak Ditemukan" }
@@ -78,8 +85,11 @@ class Controller {
         },
         include: [
           {
-            module: User,
-            as: "Contact",
+            model: User,
+            as: "Teman",
+            attributes: {
+              exclude: exclude,
+            },
           },
         ],
       })
@@ -106,10 +116,16 @@ class Controller {
           {
             model: User,
             as: "Pemilik",
+            attributes: {
+              exclude: exclude,
+            },
           },
           {
             model: User,
-            as: "Contact",
+            as: "Teman",
+            attributes: {
+              exclude: exclude,
+            },
           },
         ],
       })
@@ -130,10 +146,32 @@ class Controller {
   // CREATE
   static async create(req, res, next) {
     try {
-      const { username, ContactId, PemilikId } = req.body
-      let body = { username, ContactId, PemilikId }
+      const { username, phoneNumber, PemilikId } = req.body
+
+      const dataTeman = await User.findOne({
+        where: {
+          phoneNumber,
+        },
+      })
+
+      if (!dataTeman) {
+        throw { name: "Nomor Telepon Tidak Terdaftar Sebagai Pengguna" }
+      }
+      const dataContact = await Contact.findOne({
+        where: {
+          PemilikId: PemilikId,
+          ContactId: dataTeman.id,
+        },
+      })
+
+      if (dataContact) {
+        throw { name: "Sudah Terdaftar", username: dataContact.username }
+      }
+
+      let body = { username, ContactId: dataTeman.id, PemilikId }
 
       const data = await Contact.create(body)
+
       res.status(201).json({
         statusCode: 201,
         message: "Berhasil Membuat Data Contact",
@@ -148,9 +186,9 @@ class Controller {
   static async update(req, res, next) {
     try {
       const { id } = req.params
-      const { username, ContactId, PemilikId } = req.body
+      const { username } = req.body
 
-      let body = { username, ContactId, PemilikId }
+      let body = { username }
 
       const data = await Contact.findOne({
         where: {
