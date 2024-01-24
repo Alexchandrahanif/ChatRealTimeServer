@@ -1,14 +1,36 @@
 const { User, GroupMessage, Group } = require("../models")
 class Controller {
   // GET ALL
-  static async getAll(req, res, next) {
+  static async getAllChat(req, res, next) {
     try {
-      const data = await GroupMessage.findAll()
+      const { GroupId } = req.params
+
+      const dataGroup = await Group.findOne({ where: { id: GroupId } })
+
+      if (!dataGroup) {
+        throw { name: "Id Group Tidak Ditemukan" }
+      }
+
+      const dataChatGroup = await GroupMessage.findAll({
+        where: {
+          GroupId,
+        },
+        include: [
+          {
+            model: User,
+            as: "PengirimGroup",
+            attributes: {
+              exclude,
+            },
+          },
+        ],
+        order: [["createdAt", "ASC"]],
+      })
 
       res.status(200).json({
         statusCode: 200,
-        message: "Berhasil Menampilkan Data Group Message",
-        data: data,
+        message: "Berhasil Menampilkan Chat Group",
+        data: dataChatGroup,
       })
     } catch (error) {
       next(error)
@@ -16,22 +38,33 @@ class Controller {
   }
 
   // GET ONE
-  static async getOne(req, res, next) {
+  static async getOneChat(req, res, next) {
     try {
       const { id } = req.params
-      const data = await GroupMessage.findOne({
+
+      const dataChat = await GroupMessage.findOne({
         where: {
           id,
         },
+        include: [
+          {
+            model: User,
+            as: "PengirimGroup",
+            attributes: {
+              exclude,
+            },
+          },
+        ],
       })
 
-      if (!data) {
-        throw { name: "Id Group Chat Tidak Ditemukan" }
+      if (!dataChat) {
+        throw { name: "Id Chat Tidak Ditemukan" }
       }
+
       res.status(200).json({
         statusCode: 200,
-        message: "Berhasil Menampilkan Data Group Message",
-        data: data,
+        message: "Berhasil Menampilkan Chat",
+        data: dataChat,
       })
     } catch (error) {
       next(error)
@@ -39,18 +72,39 @@ class Controller {
   }
 
   // CREATE
-  static async create(req, res, next) {
+  static async createChat(req, res, next) {
     try {
-      const {} = req.body
-      let body = {
-        //
+      const { GroupId, SenderId, message } = req.body
+      const dataSender = await User.findOne({ where: { id: SenderId } })
+
+      const dataGroup = await Group.findOne({ where: { id: GroupId } })
+
+      if (!dataGroup) {
+        throw { name: "Id Group Tidak Ditemukan" }
       }
 
-      const data = await GroupMessage.create(body)
+      if (!dataSender) {
+        throw { name: "Id User Tidak Ditemukan" }
+      }
+
+      let messageImage = req.file ? req.file.path : ""
+
+      const dataChat = await GroupMessage.create({
+        GroupId,
+        SenderId,
+        message,
+        messageImage: messageImage,
+        readMessageStatus: false,
+        isUpdate: false,
+      })
+
+      // Kirim pesan menggunakan Socket.IO
+      // io.emit("chat message", { SenderId, ReceiverId, message, messageImage })
+
       res.status(201).json({
         statusCode: 201,
-        message: "Berhasil Membuat Data Group Message",
-        data: data,
+        message: "Berhasil Membuat Chat Group Baru",
+        data: dataChat,
       })
     } catch (error) {
       next(error)
@@ -58,46 +112,69 @@ class Controller {
   }
 
   // UPDATE
-  static async update(req, res, next) {
+  static async updateChat(req, res, next) {
     try {
       const { id } = req.params
-      const {} = req.body
+      const { message } = req.body
 
-      let body = {}
-
-      const data = await GroupMessage.findOne({
+      const dataChat = await GroupMessage.findOne({
         where: {
           id,
         },
       })
 
-      if (!data) {
-        throw { name: "Id Group Chat Tidak Ditemukan" }
+      if (!dataChat) {
+        throw { name: "Id Chat Tidak Ditemukan" }
       }
 
-      await GroupMessage.update(body, { where: { id } })
+      await GroupMessage.update({ message, isUpdate: true }, { where: { id } })
 
       res.status(200).json({
         statusCode: 200,
-        message: "Berhasil Mengubah Data Group Message",
+        message: "Berhasil Memperbaharui Chat",
       })
     } catch (error) {
       next(error)
     }
   }
 
+  // UPDATE STATUS
+  // static async updateStatusChat(req, res, next) {
+  //   try {
+  //     const { SenderId } = req.params
+
+  //     const dataChat = await GroupMessage.update(
+  //       { readMessageStatus: true },
+  //       {
+  //         where: {
+  //           SenderId,
+  //           ReceiverId: req.user.id,
+  //         },
+  //       },
+  //     )
+
+  //     await res.status(200).json({
+  //       statusCode: 200,
+  //       message: "Berhasil Memperbaharui Status Read Chat",
+  //     })
+  //   } catch (error) {
+  //     next(error)
+  //   }
+  // }
+
   // DELETE
-  static async getAll(req, res, next) {
+  static async deleteChat(req, res, next) {
     try {
       const { id } = req.params
-      const data = await GroupMessage.findOne({
+
+      const dataChat = await GroupMessage.findOne({
         where: {
           id,
         },
       })
 
-      if (!data) {
-        throw { name: "Id Group Chat Tidak Ditemukan" }
+      if (!dataChat) {
+        throw { name: "Id Chat Tidak Ditemukan" }
       }
 
       await GroupMessage.destroy({
@@ -108,7 +185,7 @@ class Controller {
 
       res.status(200).json({
         statusCode: 200,
-        message: "Berhasil Menghapus Data Group Message",
+        message: "Berhasil Menghapus Chat",
       })
     } catch (error) {
       next(error)
