@@ -44,6 +44,9 @@ const handleError = (err, req, res, next) => {
   } else if (err.name === "Nomor Telepon Tidak Terdaftar Sebagai Pengguna") {
     code = 400
     message = `Nomor Telepon Tidak Terdaftar Sebagai Pengguna`
+  } else if (err.name === "Anda Tidak Bisa Menyimpan Kontak Sendiri") {
+    code = 400
+    message = `Anda Tidak Bisa Menyimpan Kontak Sendiri`
   } else if (err.name === "Maaf Anda Bukan Anggota Group") {
     code = 400
     message = `Maaf Anda Bukan Anggota Group ${err.groupName}`

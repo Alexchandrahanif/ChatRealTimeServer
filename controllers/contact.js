@@ -107,11 +107,8 @@ class Controller {
   // GET ONE
   static async getOne(req, res, next) {
     try {
-      const { id } = req.params
+      const { phoneNumber } = req.params
       const data = await Contact.findOne({
-        where: {
-          id,
-        },
         include: [
           {
             model: User,
@@ -125,6 +122,9 @@ class Controller {
             as: "Teman",
             attributes: {
               exclude: exclude,
+            },
+            where: {
+              phoneNumber: phoneNumber,
             },
           },
         ],
@@ -164,6 +164,17 @@ class Controller {
           ContactId: dataTeman.id,
         },
       })
+
+      const dataSendiri = await User.findOne({
+        where: {
+          id: req.user.id,
+          phoneNumber,
+        },
+      })
+
+      if (dataSendiri) {
+        throw { name: "Anda Tidak Bisa Menyimpan Kontak Sendiri" }
+      }
 
       if (dataContact) {
         throw { name: "Sudah Terdaftar", username: dataContact.username }
