@@ -74,7 +74,10 @@ class Controller {
   // CREATE
   static async createChat(req, res, next) {
     try {
-      const { GroupId, SenderId, message } = req.body
+      const { GroupId, message } = req.body
+
+      const SenderId = req.user.id
+
       const dataSender = await User.findOne({ where: { id: SenderId } })
 
       const dataGroup = await Group.findOne({ where: { id: GroupId } })
