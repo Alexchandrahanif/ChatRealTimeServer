@@ -164,7 +164,6 @@ class Controller {
   static async updateStatusChat(req, res, next) {
     try {
       const { SenderId } = req.params
-      console.log(req.user.id)
 
       const dataChat = await PersonalMessage.update(
         { readMessageStatus: true },

@@ -2,19 +2,28 @@ require("dotenv").config()
 
 const router = require("./routes")
 const handleError = require("./middleware/handleError")
+const upload = require("./helpers/multer")
 
 const cors = require("cors")
 const express = require("express")
-const http = require("http") // Tambahkan modul http
-const socketIO = require("socket.io") // Tambahkan modul socket.io
+const http = require("http")
+const socketIO = require("socket.io")
+const file = upload()
 
 const app = express()
-const server = http.createServer(app) // Tambahkan modul socket.io
-const io = socketIO(server) // Inisialisasi Socket.IO
+const server = http.createServer(app)
+const io = socketIO(server)
 
 const port = process.env.PORT
 
+const corsOptions = {
+  origin: "http://localhost:5173",
+  methods: ["GET", "POST"],
+}
+
 app.use(cors())
+io.use(cors(corsOptions))
+
 app.use(express.urlencoded({ extended: true }))
 app.use(express.json())
 
@@ -22,32 +31,25 @@ app.use("/", router)
 app.use("/upload", express.static("upload"))
 app.use(handleError)
 
-// Socket.IO connection event
 io.on("connection", (socket) => {
   console.log("A user connected")
-
-  // Tambahkan event atau logika Socket.IO di sini sesuai kebutuhan Anda
-
-  // Mendapatkan data pengguna dari client
   const { userId } = socket.handshake.query
 
-  // Set status user menjadi online (true) di database
   updateUserStatus(userId, true)
 
-  // Event untuk menangani pesan ketika pengguna mengetik
   socket.on("typing", () => {
-    // Implementasi logika ketika pengguna mengetik
-    // Misalnya, kirim pesan bahwa pengguna sedang mengetik kepada pengguna lain
     socket.broadcast.emit("userTyping", { userId, isTyping: true })
   })
 
-  // Event untuk menangani pesan ketika pengguna berhenti mengetik
+  file.on("progress", (file, buffer, { total }) => {
+    const percentage = (buffer.length / total) * 100
+    socket.emit("progress", percentage)
+  })
+
   socket.on("stopTyping", () => {
-    // Implementasi logika ketika pengguna berhenti mengetik
-    // Misalnya, kirim pesan bahwa pengguna telah berhenti mengetik kepada pengguna lain
     socket.broadcast.emit("userTyping", { userId, isTyping: false })
   })
-  // Disconnect event
+
   socket.on("disconnect", () => {
     console.log("User disconnected")
   })

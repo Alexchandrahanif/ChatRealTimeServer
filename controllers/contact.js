@@ -71,7 +71,7 @@ class Controller {
   // GER ALL BY PERSONAL
   static async getAllPersonal(req, res, next) {
     try {
-      const { id } = req.params
+      const { id } = req.user
 
       const data = await User.findOne({ where: { id } })
 
@@ -146,7 +146,7 @@ class Controller {
   // CREATE
   static async create(req, res, next) {
     try {
-      const { username, phoneNumber, PemilikId } = req.body
+      const { username, phoneNumber } = req.body
 
       const dataTeman = await User.findOne({
         where: {
@@ -157,9 +157,10 @@ class Controller {
       if (!dataTeman) {
         throw { name: "Nomor Telepon Tidak Terdaftar Sebagai Pengguna" }
       }
+
       const dataContact = await Contact.findOne({
         where: {
-          PemilikId: PemilikId,
+          PemilikId: req.user.id,
           ContactId: dataTeman.id,
         },
       })
@@ -168,7 +169,7 @@ class Controller {
         throw { name: "Sudah Terdaftar", username: dataContact.username }
       }
 
-      let body = { username, ContactId: dataTeman.id, PemilikId }
+      let body = { username, ContactId: dataTeman.id, PemilikId: req.user.id }
 
       const data = await Contact.create(body)
 
