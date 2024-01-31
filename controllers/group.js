@@ -1,11 +1,11 @@
 const { exclude } = require("../helpers/helper")
 const remove = require("../helpers/removeFile")
-const { User, Group, GroupMessage, GroupMember } = require("../models")
+const { User, Group, GroupMessage, GroupMember, Contact } = require("../models")
 class Controller {
   // GET ALL
   static async getGroupPersonal(req, res, next) {
     try {
-      const { UserId } = req.params
+      const { UserId } = req.user.id
       const data = await Group.findAll({
         include: [
           {
@@ -201,16 +201,32 @@ class Controller {
   //! CREATE NEW MEMBER
   static async createNewMember(req, res, next) {
     try {
-      const { UserId, GroupId } = req.body
+      const { ContactId, GroupId } = req.body
       const dataGroup = await Group.findOne({
         where: {
           id: GroupId,
         },
       })
-      const dataUser = await User.findOne({
+      const dataContact = await Contact.findOne({
         where: {
-          id: UserId,
+          id: ContactId,
         },
+        include: [
+          {
+            model: User,
+            as: "Pemilik",
+            attributes: {
+              exclude: exclude,
+            },
+          },
+          {
+            model: User,
+            as: "Teman",
+            attributes: {
+              exclude: exclude,
+            },
+          },
+        ],
       })
 
       const dataAdmin = await GroupMember.findOne({
@@ -224,8 +240,8 @@ class Controller {
         throw { name: "Id Group Tidak Ditemukan" }
       }
 
-      if (!dataUser) {
-        throw { name: "Id User Tidak Ditemukan" }
+      if (!dataContact) {
+        throw { name: "Id Contact Tidak Ditemukan" }
       }
 
       if (!dataAdmin) {
@@ -243,14 +259,14 @@ class Controller {
       }
 
       const dataMember = await GroupMember.create({
-        UserId,
+        UserId: dataContact.Teman.id,
         GroupId,
         status: "MEMBER",
       })
 
       res.status(201).json({
         statusCode: 201,
-        message: `Berhasil Menambahkan ${dataUser.username} ke group ${dataGroup.name}`,
+        message: `Berhasil Menambahkan ${dataContact.username} ke group ${dataGroup.name}`,
       })
     } catch (error) {
       next(error)
@@ -322,7 +338,7 @@ class Controller {
     }
   }
 
-  //! DELETE NEW MEMBER
+  //! DELETE MEMBER
   static async deleteMember(req, res, next) {
     try {
       const { MemberId, GroupId } = req.params

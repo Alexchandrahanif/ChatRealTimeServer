@@ -24,11 +24,7 @@ groupRouter.delete(
 )
 
 // GROUP
-groupRouter.get(
-  "/personal/:UserId",
-  authentication,
-  Controller.getGroupPersonal,
-)
+groupRouter.get("/personal", authentication, Controller.getGroupPersonal)
 groupRouter.get("/:id", authentication, Controller.getOneGroup)
 groupRouter.post("/", authentication, Controller.createGroup)
 groupRouter.patch("/:id", authentication, Controller.updateGroup)
