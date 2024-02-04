@@ -8,8 +8,9 @@ const file = upload()
 userRouter.post("/register", Controller.register)
 userRouter.post("/login", Controller.login)
 userRouter.post("/verify/:id", Controller.verifyCode)
+userRouter.get("/profile", authentication, Controller.getProfile)
 userRouter.get("/", authentication, Controller.getAllUsers)
-userRouter.get("/:id", authentication, Controller.getUser)
+userRouter.get("/:phoneNumber", authentication, Controller.getUser)
 userRouter.patch(
   "/:id",
   file.single("avatar"),

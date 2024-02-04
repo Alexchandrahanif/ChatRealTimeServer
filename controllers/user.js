@@ -141,12 +141,39 @@ class Controller {
   }
 
   // GET ONE USER
-  static async getUser(req, res, next) {
+  static async getProfile(req, res, next) {
     try {
-      const { id } = req.params
+      const { id } = req.user.id
       const data = await User.findOne({
         where: {
           id,
+        },
+        attributes: {
+          exclude: ["password"],
+        },
+      })
+
+      if (!data) {
+        throw { name: "Id User Tidak Ditemukan" }
+      }
+
+      res.status(200).json({
+        statusCode: 200,
+        message: "Berhasil Menampilkan Data User",
+        data: data,
+      })
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  // GET ONE USER
+  static async getUser(req, res, next) {
+    try {
+      const { phoneNumber } = req.params
+      const data = await User.findOne({
+        where: {
+          phoneNumber,
         },
         attributes: {
           exclude: ["password"],

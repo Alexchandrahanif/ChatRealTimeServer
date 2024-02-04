@@ -98,11 +98,11 @@ class Controller {
   // CREATE
   static async createChat(req, res, next) {
     try {
-      const { SenderId, ReceiverId, message } = req.body
-      const dataSender = await User.findOne({ where: { id: SenderId } })
+      let SenderId = req.user.id
+      const { ReceiverId, message } = req.body
       const dataReceiver = await User.findOne({ where: { id: ReceiverId } })
 
-      if (!dataSender || !dataReceiver) {
+      if (!dataReceiver) {
         throw { name: "Id User Tidak Ditemukan" }
       }
 
@@ -118,7 +118,7 @@ class Controller {
       })
 
       // Kirim pesan menggunakan Socket.IO
-      // io.emit("chat message", { SenderId, ReceiverId, message, messageImage })
+      io.emit("progress", { SenderId, ReceiverId, message, messageImage })
 
       res.status(201).json({
         statusCode: 201,
